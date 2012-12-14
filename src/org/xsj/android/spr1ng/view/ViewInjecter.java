@@ -4,6 +4,7 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
+import org.xsj.android.spr1ng.core.BeanInjecter;
 import org.xsj.android.spr1ng.core.SpringContext;
 import org.xsj.android.spr1ng.core.StringUtils;
 import org.xsj.android.spr1ng.view.annotation.AfterStart;
@@ -34,12 +35,12 @@ public class ViewInjecter {
 	private static SpringContext springContext = SpringContext.getInstance();
 	public static void inject(Activity activity){
 		Class<?> actClazz = activity.getClass();
-		RegisterBean actAnn = actClazz.getAnnotation(RegisterBean.class);
-		if(actAnn!=null){
-			String actName = actAnn.value();
-			actName = StringUtils.defaultIfEmpty(actName, StringUtils.uncapitalize(actClazz.getSimpleName()));
-			springContext.registerBean(actName, activity);
-		}
+//		RegisterBean actAnn = actClazz.getAnnotation(RegisterBean.class);
+//		if(actAnn!=null){
+//			String actName = actAnn.value();
+//			actName = StringUtils.defaultIfEmpty(actName, StringUtils.uncapitalize(actClazz.getSimpleName()));
+//			springContext.registerBean(actName, activity);
+//		}
 		Field[] fields = actClazz.getDeclaredFields();
 		if(fields!=null && fields.length>0){
 			for(Field field : fields){
@@ -101,7 +102,7 @@ public class ViewInjecter {
 			}
 		}
 		
-		
+		BeanInjecter.inject(activity);
 	}
 	private static Object RId(Activity activity,Field field,Annotation annotation){
 		RId annotationObj = field.getAnnotation(RId.class);

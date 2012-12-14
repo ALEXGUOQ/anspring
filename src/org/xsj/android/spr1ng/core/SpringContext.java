@@ -21,7 +21,7 @@ import org.xsj.android.spr1ng.core.annotation.Qualifier;
 import org.xsj.android.spr1ng.core.annotation.Scope;
 import org.xsj.android.spr1ng.core.annotation.SpringConfig;
 
-import android.content.Context;
+//import android.content.Context;
 import android.util.Log;
 
 
@@ -196,7 +196,7 @@ public class SpringContext {
 			Bean bean = beanClazzMap.get(clazz);
 			if(bean==null){
 				if(faultClazzSet.contains(clazz))break;
-				if(Context.class.isAssignableFrom(clazz))break;
+//				if(Context.class.isAssignableFrom(clazz))break;
 				if(clazz.isPrimitive())break;
 				Component component = clazz.getAnnotation(Component.class);
 				if(component!=null){

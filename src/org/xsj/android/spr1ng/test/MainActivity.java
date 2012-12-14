@@ -19,9 +19,9 @@ import android.widget.Toast;
 
 @SpringConfig(allowInjectFault=true)
 public class MainActivity extends ComponentActivity {
-	@RId(R.id.button2)
+//	@RId(R.id.button1)
 	Button btn2;
-	@RString(R.string.hello_world)
+//	@RString(R.string.hello_world)
 	String hello;
 	
 	@Autowired
@@ -36,7 +36,7 @@ public class MainActivity extends ComponentActivity {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_main);
 	}
-	@Click(R.id.button1)
+//	@Click(R.id.button1)
 	public void onClick(View v) {
 		User u = (User) SpringContext.getInstance().getBean("user");
 		Toast.makeText(MainActivity.this, "结果："+u.winman.toString(), Toast.LENGTH_SHORT).show();

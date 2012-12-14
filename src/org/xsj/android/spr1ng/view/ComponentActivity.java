@@ -36,7 +36,6 @@ public class ComponentActivity extends Activity {
 	private void __inject__() {
 		SpringContext.getInstance().load(this.getClass().getAnnotation(SpringConfig.class));
 		ViewInjecter.inject(this);
-		BeanInjecter.inject(this);
 	}
 
 

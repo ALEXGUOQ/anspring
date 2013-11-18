@@ -61,6 +61,7 @@ public class MainActivity extends Activity{
 		SpringUtils.load(this,MyConfigure.class);
 		BeanInjecter.inject(SpringUtils.getSpringContext(),this);
 		ActivityInjecter.inject(this);
+		Logx.d("加载成功");
 	}
 	@Override
 	protected void onDestroy() {

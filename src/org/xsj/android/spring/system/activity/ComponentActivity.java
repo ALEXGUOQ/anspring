@@ -1,9 +1,9 @@
 package org.xsj.android.spring.system.activity;
 
+import org.xsj.android.spring.core.BeanInjecter;
 import org.xsj.android.spring.core.SpringUtils;
 import org.xsj.android.spring.core.annotation.Configuration;
 import android.app.Activity;
-import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
@@ -32,9 +32,8 @@ public class ComponentActivity extends Activity {
 		if(this.getClass().isAnnotationPresent(Configuration.class)){
 			SpringUtils.load(this,this.getClass());
 		}
-		if(SpringUtils.hasLoad()){
-			ActivityInjecter.inject(SpringUtils.getSpringContext(),this);
-		}
+		ActivityInjecter.inject(this);
+		BeanInjecter.inject(SpringUtils.getSpringContext(),this);
 	}
 
 

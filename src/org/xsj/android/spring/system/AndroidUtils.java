@@ -5,7 +5,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.xsj.android.spring.core.IOUtils;
+import org.xsj.android.spring.common.IOUtils;
+import org.xsj.android.spring.common.Logx;
 
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -27,9 +28,9 @@ import android.widget.Toast;
 
 
 public class AndroidUtils {
-	private final String DIALOG_ALERT = "DIALOG_ALERT";
-	private final String DIALOG_CONFIRM = "DIALOG_CONFIRM";
-	private final String DIALOG_PROGRESS = "DIALOG_PROGRESS";
+//	private final String DIALOG_ALERT = "DIALOG_ALERT";
+//	private final String DIALOG_CONFIRM = "DIALOG_CONFIRM";
+//	private final String DIALOG_PROGRESS = "DIALOG_PROGRESS";
 	private Map<String,Object> cacheMap;
 	protected Context context;
 	private SharedPreferences  sharedPreferences ;
@@ -51,7 +52,6 @@ public class AndroidUtils {
     }
     
 	public void testQueryUri(String uriString){
-		System.out.println("testQueryUri");
 		ContentResolver resolver = context.getContentResolver();
 		Uri uri = Uri.parse(uriString);
 		Cursor cursor =  resolver.query(uri, null, null, null, null);

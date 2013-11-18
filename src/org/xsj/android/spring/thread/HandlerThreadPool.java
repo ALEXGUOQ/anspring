@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 import org.xsj.android.spring.core.annotation.Component;
 
 import android.os.HandlerThread;
-@Component
 public class HandlerThreadPool {
 	private static int __threadId__=0;
 	int maxNum;

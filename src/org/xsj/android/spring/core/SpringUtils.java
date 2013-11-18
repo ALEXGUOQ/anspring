@@ -38,7 +38,8 @@ public class SpringUtils {
 		getSpringContext().load(context, configClass);
 	}
 	public static void reload(Context context,Class<?> configClass){
-		getSpringContext().reload(context, configClass);
+		unload();
+		load(context,configClass);
 	}
 	public static void unload(){
 		getSpringContext().unload();

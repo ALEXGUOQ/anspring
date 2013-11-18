@@ -4,12 +4,8 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Collection;
-
-import org.xsj.android.spring.core.BeanInjecter;
+import org.xsj.android.spring.common.Logx;
 import org.xsj.android.spring.core.ClassInfo;
-import org.xsj.android.spring.core.SpringContext;
-import org.xsj.android.spring.core.SpringUtils;
-import org.xsj.android.spring.core.StringUtils;
 import org.xsj.android.spring.system.SystemInjecter;
 import org.xsj.android.spring.system.activity.annotaion.AfterStart;
 import org.xsj.android.spring.system.activity.annotaion.OnClick;
@@ -18,17 +14,7 @@ import org.xsj.android.spring.system.activity.annotaion.OnItemLongClick;
 import org.xsj.android.spring.system.activity.annotaion.OnItemSelected;
 import org.xsj.android.spring.system.activity.annotaion.OnLongClick;
 import org.xsj.android.spring.system.activity.annotaion.R_Id;
-import org.xsj.android.spring.system.annotation.R_Drawable;
-import org.xsj.android.spring.system.annotation.R_Layout;
-import org.xsj.android.spring.system.annotation.R_String;
-import org.xsj.android.spring.system.annotation.RegisterBean;
-import org.xsj.android.spring.system.annotation.SystemService;
-
 import android.app.Activity;
-import android.app.Application;
-import android.content.Context;
-import android.graphics.drawable.Drawable;
-import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnLongClickListener;
@@ -38,21 +24,19 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.AdapterView.OnItemSelectedListener;
 
 public class ActivityInjecter {
+
 	public static void inject(Activity activity){
-		inject(SpringUtils.getSpringContext(), activity);
-	}
-	public static void inject(SpringContext springContext,Activity activity){
+		if(activity==null)	return;
 		Class<?> actClazz = activity.getClass();
 		Collection<Field> fields = ClassInfo.find(actClazz).getFieldListWithOverride();
 		if(fields!=null){
 			for(Field field : fields){
 				field.setAccessible(true);
 				Annotation[] annotaions = field.getAnnotations();
-				Object bean=null;
 				for(Annotation annotation : annotaions){
 					Class<?> aclazz = annotation.annotationType();
 					if(aclazz == R_Id.class){
-						bean=RId(springContext,activity, field, annotation);
+						RId(activity, field, annotation);
 						break;
 					}
 				}
@@ -66,25 +50,25 @@ public class ActivityInjecter {
 				for(Annotation annotation : annotaions){
 					Class<?> aclazz = annotation.annotationType();
 					if(aclazz == OnClick.class){
-						Click(springContext,activity, method, annotation);
+						Click(activity, method, annotation);
 					}else if(aclazz == OnLongClick.class){
-						LongClick(springContext,activity, method, annotation);
+						LongClick(activity, method, annotation);
 					}else if(aclazz == OnItemClick.class){
-						ItemClick(springContext,activity, method, annotation);
+						ItemClick(activity, method, annotation);
 					}else if(aclazz == OnItemLongClick.class){
-						ItemLongClick(springContext,activity, method, annotation);
+						ItemLongClick(activity, method, annotation);
 					}else if(aclazz == OnItemSelected.class){
-						ItemSelected(springContext,activity, method, annotation);
+						ItemSelected(activity, method, annotation);
 					}else if(aclazz == AfterStart.class){
-						AfterViews(springContext,activity, method, annotation);
+						AfterViews(activity, method, annotation);
 					}
 					
 				}
 			}
 		}
-		SystemInjecter.inject(springContext,activity);
+		SystemInjecter.inject(activity,activity);
 	}
-	private static Object RId(SpringContext springContext,Activity activity,Field field,Annotation annotation){
+	private static Object RId(Activity activity,Field field,Annotation annotation){
 		R_Id annotationObj = field.getAnnotation(R_Id.class);
 		int viewId = annotationObj.value();
 		try {
@@ -96,12 +80,12 @@ public class ActivityInjecter {
 				return view;
 			}
 		} catch (Exception e) {
-			springContext.error(e);
+			runtimeErr(e);
 		}
 		return null;
 	}
 
-	private static void Click(SpringContext springContext,final Activity activity,final Method method,Annotation annotation){
+	private static void Click(final Activity activity,final Method method,Annotation annotation){
 		OnClick annotationObj = method.getAnnotation(OnClick.class);
 		int[] viewIds = annotationObj.value();
 		for(int viewId : viewIds){
@@ -118,14 +102,14 @@ public class ActivityInjecter {
 						_setParams(params,paramsIndex, v, 0);
 						method.invoke(activity, params);
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						runtimeErr(e);
 					}
 				}
 			});
 		}
 	}
 	
-	private static void LongClick(SpringContext springContext,final Activity activity,final Method method,Annotation annotation){
+	private static void LongClick(final Activity activity,final Method method,Annotation annotation){
 		OnLongClick annotationObj = method.getAnnotation(OnLongClick.class);
 		int[] viewIds = annotationObj.value();
 		for(int viewId : viewIds){
@@ -145,7 +129,7 @@ public class ActivityInjecter {
 							return true;
 						}
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						runtimeErr(e);
 					}
 					return false;
 				}
@@ -153,7 +137,7 @@ public class ActivityInjecter {
 		}
 	}
 	
-	private static void ItemClick(SpringContext springContext,final Activity activity,final Method method,Annotation annotation){
+	private static void ItemClick(final Activity activity,final Method method,Annotation annotation){
 		OnItemClick annotationObj = method.getAnnotation(OnItemClick.class);
 		int[] viewIds = annotationObj.value();
 		for(int viewId : viewIds){
@@ -181,7 +165,7 @@ public class ActivityInjecter {
 						_setParams(params,paramsIndex, arg3, 3);
 						method.invoke(activity, params);
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						runtimeErr(e);
 					}
 				}
 
@@ -189,7 +173,7 @@ public class ActivityInjecter {
 		}
 	}
 	
-	private static void ItemLongClick(SpringContext springContext,final Activity activity,final Method method,Annotation annotation){
+	private static void ItemLongClick(final Activity activity,final Method method,Annotation annotation){
 		OnItemLongClick annotationObj = method.getAnnotation(OnItemLongClick.class);
 		int[] viewIds = annotationObj.value();
 		for(int viewId : viewIds){
@@ -220,7 +204,7 @@ public class ActivityInjecter {
 							return true;
 						}
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						runtimeErr(e);
 					}
 					return false;
 				}
@@ -229,7 +213,7 @@ public class ActivityInjecter {
 		}
 	}
 	
-	private static void ItemSelected(SpringContext springContext,final Activity activity,final Method method,Annotation annotation){
+	private static void ItemSelected(final Activity activity,final Method method,Annotation annotation){
 		OnItemSelected annotationObj = method.getAnnotation(OnItemSelected.class);
 		int[] viewIds = annotationObj.value();
 		for(int viewId : viewIds){
@@ -257,7 +241,7 @@ public class ActivityInjecter {
 						_setParams(params,paramsIndex, arg3, 3);
 						method.invoke(activity, params);
 					} catch (Exception e) {
-						throw new RuntimeException(e);
+						runtimeErr(e);
 					}
 				}
 
@@ -269,7 +253,7 @@ public class ActivityInjecter {
 		}
 	}
 	
-	private static void AfterViews(SpringContext springContext,final Activity activity,final Method method,Annotation annotation){
+	private static void AfterViews(final Activity activity,final Method method,Annotation annotation){
 		AfterStart annotationObj = method.getAnnotation(AfterStart.class);
 		int delayMillis = (int) annotationObj.value();
 		activity.getWindow().getDecorView().postDelayed(new Runnable() {
@@ -278,7 +262,7 @@ public class ActivityInjecter {
 				try {
 					method.invoke(activity);
 				} catch (Exception e) {
-					throw new RuntimeException(e);
+					runtimeErr(e);
 				}
 			}
 		}, delayMillis);
@@ -300,6 +284,11 @@ public class ActivityInjecter {
 		if(index!=-1){
 			params[index]=arg;
 		}
+	}
+	
+	private static void runtimeErr(Exception e){
+		Logx.et("ActivityInjecter",e.getMessage());
+		throw new RuntimeException(e);
 	}
 	
 	

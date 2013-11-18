@@ -8,8 +8,12 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.List;
 
+import org.xsj.android.spring.common.StringUtils;
 import org.xsj.android.spring.core.annotation.Autowired;
+import org.xsj.android.spring.core.annotation.PostConstruct;
+import org.xsj.android.spring.core.annotation.PreDestroy;
 import org.xsj.android.spring.core.annotation.Qualifier;
+import org.xsj.android.spring.core.annotation.Value;
 
 
 
@@ -17,46 +21,17 @@ public class BeanInjecter {
 	public static void inject(Object object){
 		inject(SpringUtils.getSpringContext(),object);
 	}
-	/**
-	 * 注入属性
-	 * 使用的是_obtainBean(qname,class)，因为有可能声明的是父类
-	 * @param springContext
-	 * @param object
-	 */
+
 	public static void inject(SpringContext springContext,Object object){
 		if(object==null)	return;
+		if(springContext.getStatus()==SpringContext.STATUS_UNLOAD ){
+			springContext.error("SpringContext has not load config");
+		}
 		Class<?> clazz = object.getClass();
 		Collection<Field> fields = ClassInfo.find(clazz).getFieldListWithOverride();
 		if(fields!=null && fields.size()>0){
 			for(Field field: fields){
-				Autowired autowired = field.getAnnotation(Autowired.class);
-				if(autowired!=null){
-					field.setAccessible(true);
-					Qualifier qualifier = field.getAnnotation(Qualifier.class);
-					Object fieldObj = null;
-					String qname = null;
-					if(qualifier!=null){
-						qname = qualifier.value();
-						qname = StringUtils.defaultIfEmpty(qname,field.getName());
-						fieldObj = springContext.getBean(qname);
-					}
-					if(fieldObj==null){
-						fieldObj = springContext._obtainBean(qname,field.getType());
-					}
-					if(fieldObj==null){
-						if(autowired.required()){
-							String e = "can not inject"+object.getClass()+":"+field.getName();
-							springContext.error(e);
-						}
-					}
-					try {
-						field.set(object, fieldObj);
-					} catch (IllegalArgumentException e) {
-						springContext.debug(e);
-					} catch (IllegalAccessException e) {
-						springContext.debug(e);
-					}
-				}
+				if(autowareInject(springContext, field, object) || valueInject(springContext, field, object));
 			}
 		}
 		
@@ -68,33 +43,77 @@ public class BeanInjecter {
 					Annotation[][] psAnns = method.getParameterAnnotations();
 					Class<?>[] psClazz = method.getParameterTypes();
 					Object params[]=new Object[psAnns.length];
-					for(int i=0;i<psAnns.length;i++){
-						Annotation[] pAnns = psAnns[i];
-						Object pobj = null;
-						String qname = null;
-						for(Annotation pAnn : pAnns){
-							if(pAnn.annotationType()==Qualifier.class){
-								qname = ((Qualifier)pAnn).value();
-								qname = StringUtils.defaultIfEmpty(qname,StringUtils.uncapitalize(psClazz[i].getSimpleName()));
-								pobj = springContext.getBean(qname);
-								break;
-							}
-						}
-						if(pobj==null){
-							Class<?> pClazz = psClazz[i];
-							pobj = springContext._obtainBean(pClazz);
-							if(pobj==null){
-								throw new Exception("can not inject ["+qname+"] "+pClazz);
-							}
-						}
-						params[i]=pobj;
-					}
+					springContext.getConfigurationLoader().assignParam(clazz, psAnns, psClazz, params);
 					method.invoke(object, params);
 				} catch (Exception e) {
 					springContext.error(e);
 				}
 			}
+			if(springContext.getStatus()==SpringContext.STATUS_LOADING ){
+				PostConstruct postConstruct = method.getAnnotation(PostConstruct.class);
+				if(postConstruct!=null){
+					if(method.getReturnType() != Void.TYPE){
+						springContext.error("PostConstruct must return void:"+method);
+					}else if(method.getParameterTypes().length > 0){
+						springContext.error("PostConstruct must no param:"+method);
+					}
+					springContext.getConfigurationLoader().addPostConstruct(new PlanInvokeMethod(object, method));
+				}
+				PreDestroy preDestroy = method.getAnnotation(PreDestroy.class);
+				if(preDestroy!=null){
+					if(method.getReturnType() != Void.TYPE){
+						springContext.error("PostConstruct must return void:"+method);
+					}else if(method.getParameterTypes().length > 0){
+						springContext.error("PostConstruct must no param:"+method);
+					}
+					springContext.getConfigurationLoader().addPreDestroy(new PlanInvokeMethod(object, method));
+				}
+			}
 		}
 		
+	}
+	private static boolean autowareInject(SpringContext springContext, Field field, Object object) {
+		Autowired autowired = field.getAnnotation(Autowired.class);
+		if(autowired!=null){
+			field.setAccessible(true);
+			Qualifier qualifier = field.getAnnotation(Qualifier.class);
+			Object fieldObj = null;
+			String qname = null;
+			if(qualifier!=null){
+				qname = qualifier.value();
+				qname = StringUtils.defaultIfEmpty(qname,field.getName());
+				fieldObj = springContext.getConfigurationLoader().obtainObject(qname);
+			}else{
+				fieldObj = springContext.getConfigurationLoader().obtainObject(field.getType());
+			}
+			if(fieldObj==null){
+				if(autowired.required()){
+					String e = "can not inject"+object.getClass()+":"+field.getName();
+					springContext.error(e);
+				}
+			}
+			try {
+				field.set(object, fieldObj);
+			} catch (Exception e) {
+				springContext.debug(e);
+			}
+			return true;
+		}
+		return false;
+	}
+	private static boolean valueInject(SpringContext springContext, Field field, Object object) {
+		Value annValue = field.getAnnotation(Value.class);
+		if(annValue!=null){
+			field.setAccessible(true);
+			String pvalueKey = annValue.value().trim();
+			Object fieldObj = springContext.getConfigurationLoader().getAnnValueObject(field.getType(), pvalueKey);
+			try {
+				field.set(object, fieldObj);
+			} catch (Exception e) {
+				springContext.debug(e);
+			}
+			return true;
+		}
+		return false;
 	}
 }

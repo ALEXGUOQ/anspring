@@ -1,13 +1,16 @@
-package org.xsj.android.spring.system;
+package org.xsj.android.spring.common;
 
 import java.io.File;
+import java.io.FileFilter;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import org.xsj.android.spring.core.IOUtils;
 
 import android.util.Log;
 
@@ -24,20 +27,53 @@ public class Logx {
 	public static final int FileSize=3;
 	
 	private static Logx logx = new Logx();
-	
+	private SimpleDateFormat yyyyMMddHHmmss = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat yyyyMMdd = new SimpleDateFormat("yyyy-MM-dd");
+	/**
+	 * 设置所有日志级别
+	 * @param allLevel
+	 */
 	public static void setLevel(int allLevel){
 		logx._setLevel(allLevel);
 	}
+	/**
+	 * 分别设置logcat和文件的日志级别
+	 * @param fileLevel
+	 * @param consoleLevel
+	 */
     public static void setLevels(int fileLevel,int consoleLevel){
 		logx._setLevels(fileLevel,consoleLevel);
     };
+
+    /**
+     * 设置日志文件为单文件
+     * @param path 文件路径
+     */
     public static void setFileSingle(String path){
 		logx._setFileSingle(path);
     };
+
+    /**
+     * 设置日志文件为按日期，自动增加
+     * @param dir 日志文件目录
+     */
     public static void setFileDaily(String dir){
 		logx._setFileDaily(dir);
     }
-	public void setFileNull(){
+
+    /**
+     * 设置日志文件为按数据限量，自动增加
+     * @param dir 日志文件目录
+     * @param size 日志文件大小限制 单位byte
+     */
+    public static void setFileSize(String dir,int size){
+		logx._setFileSize(dir,size);
+    }
+    /**
+     * 设置没有日志文件
+     * 默认为此
+     */
+	public static void setFileNull(){
 		logx._setFileNull();
 	}
     
@@ -89,7 +125,7 @@ public class Logx {
     private int fileType;
     private String fileDir;
     private String filePath;
-    private java.sql.Date fileTimePre;
+    private Date fileTimePre;
     private long fileSizeCur;
     private long fileSizeMax;
     private FileOutputStream fosm;
@@ -195,11 +231,11 @@ public class Logx {
     	}
     	new File(dir).mkdirs();
     	fileDir = dir;
-    	fileTimePre = new java.sql.Date(new Date().getTime());
+    	fileTimePre = getTodayDate(new Date());
     	_createFileDaily();
     };
     public void _setFileSize(String dir,int size){
-    	this.fileType = FileDaily;
+    	this.fileType = FileSize;
     	IOUtils.close(fosm);
     	dir = dir.replace("\\", "/");
     	if(!dir.endsWith("/")){
@@ -218,7 +254,7 @@ public class Logx {
     
     private void _createFileDaily() {
     	IOUtils.close(fosm);
-    	String path = fileDir + new Date().toLocaleString() + ".log";
+    	String path = fileDir + yyyyMMdd.format(new Date()) + ".log";
     	try {
 			fosm = new FileOutputStream(path,true);
 		} catch (FileNotFoundException e) {
@@ -229,13 +265,27 @@ public class Logx {
     	IOUtils.close(fosm);
     	File dir = new File(fileDir);
     	File curfile = null;
-    	for(File file: dir.listFiles()){
+    	for(File file: dir.listFiles(new FileFilter() {
+			@Override
+			public boolean accept(File elem) {
+					try {
+						if(elem.isFile()){
+							String ename = elem.getName();
+							String[] enames = ename.split("\\.");
+							yyyyMMddHHmmss.parse(enames[0]);
+							return true;
+						}
+					} catch (ParseException e) {
+					}
+				return false;
+			}
+		})){
     		if(curfile==null || curfile.lastModified() < file.lastModified()){
     			curfile = file;
     		}
     	}
     	if(curfile==null){
-        	String path = fileDir + new Date().toLocaleString() + ".log";
+        	String path = fileDir + yyyyMMddHHmmss.format(new Date()) + ".log";
         	try {
 				fosm = new FileOutputStream(path,true);
 				fileSizeCur=0;
@@ -251,7 +301,7 @@ public class Logx {
 					fosm = new FileOutputStream(curfile,true);
 					fileSizeCur=len;
 				}else{
-		        	String path = fileDir + new Date().toLocaleString() + ".log";
+		        	String path = fileDir + yyyyMMddHHmmss.format(new Date()) + ".log";
 					fosm = new FileOutputStream(path,true);
 					fileSizeCur=0;
 				}
@@ -290,17 +340,19 @@ public class Logx {
 	}
 	
 	private void writeFileLog(String levelstr,String tag,Object[] objects) {
-		java.sql.Date now = new java.sql.Date(new Date().getTime());
+		Date now = new Date();
+		Date today = getTodayDate(now);
 		StringBuffer sb = new StringBuffer();
-		sb.append(now.toLocaleString()).append(" [V] ")
-		.append(" ").append(tag)
-		.append(" ").append(getMsg(objects)).append("\r\n");
+		sb.append(yyyyMMddHHmmss.format(now)).append(" [V] ")
+		.append(" ").append(tag).append("\r\n")
+		.append(getMsg(objects)).append("\r\n");
 		byte[] dat = sb.toString().getBytes();
 		try {
 			fosm.write(dat);
+			fosm.flush();
 			if(fileType == FileDaily){
-				if(now.after(fileTimePre)){
-					fileTimePre = now;
+				if(today.after(fileTimePre)){
+					fileTimePre = today;
 					_createFileDaily();
 				}
 			}else if(fileType == FileSize){
@@ -312,6 +364,11 @@ public class Logx {
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+	}
+	
+	private Date getTodayDate(Date date){
+		Date today = new Date(date.getYear(), date.getMonth(), date.getDate());
+		return today;
 	}
 
 

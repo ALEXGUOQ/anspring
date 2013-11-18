@@ -7,7 +7,6 @@ public class Bean {
 	}
 	public String name;
 	public Class<?> clazz;
-	public ScopeType scope;
 	public Object object;
 	@Override
 	public int hashCode() {
@@ -16,7 +15,6 @@ public class Bean {
 		result = prime * result + ((clazz == null) ? 0 : clazz.hashCode());
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		result = prime * result + ((object == null) ? 0 : object.hashCode());
-		result = prime * result + ((scope == null) ? 0 : scope.hashCode());
 		return result;
 	}
 	@Override
@@ -43,13 +41,11 @@ public class Bean {
 				return false;
 		} else if (!object.equals(other.object))
 			return false;
-		if (scope != other.scope)
-			return false;
 		return true;
 	}
 	@Override
 	public String toString() {
-		return "Bean [name=" + name + ", clazz=" + clazz + ", scope=" + scope
+		return "Bean [name=" + name + ", clazz=" + clazz 
 				+ ", object=" + object + "]";
 	}
 

@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 import org.xsj.android.spring.core.Bean.ScopeType;
 
-@Target({ElementType.FIELD,ElementType.CONSTRUCTOR,ElementType.METHOD})
+@Target({ElementType.FIELD,ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface Scope {
 	public ScopeType value() default ScopeType.singleton;

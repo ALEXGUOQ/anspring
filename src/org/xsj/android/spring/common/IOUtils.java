@@ -1,4 +1,4 @@
-package org.xsj.android.spring.core;
+package org.xsj.android.spring.common;
 
 import java.io.File;
 import java.io.FileInputStream;

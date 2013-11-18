@@ -1,4 +1,4 @@
-package org.xsj.android.spring.core;
+package org.xsj.android.spring.common;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
 import java.util.List;
+
+import org.xsj.android.spring.core.ClassInfo;
 
 public class BeanUtils {
 	public static<T> T copy(T t) {
@@ -40,35 +42,6 @@ public class BeanUtils {
 				e.printStackTrace();
 			}
 		}
-		
-/*		Method methods[] =  srcClazz.getMethods();
-		Method targetMethods[] =  targetClazz.getMethods();
-		ArrayList<Method> targetMethodList = new ArrayList<Method>(Arrays.asList(targetMethods));
-		for(Method method : methods){
-			String methodName = method.getName();
-			if(methodName.startsWith("get") && methodName.length()>3){
-				String FieldName = methodName.substring(3, methodName.length());
-				String targetMethodName = "set"+FieldName;
-				Iterator<Method> ite = targetMethodList.iterator();
-				while(ite.hasNext()){
-					Method m = ite.next();
-					if(m.getName().equals(targetMethodName)){
-						try {
-							m.invoke(target, method.invoke(src));
-						} catch (IllegalArgumentException e) {
-							e.printStackTrace();
-						} catch (IllegalAccessException e) {
-							e.printStackTrace();
-						} catch (InvocationTargetException e) {
-							e.printStackTrace();
-						}
-						ite.remove();
-					}
-				}
-			};
-			
-		}
-*/
 	}
 	public static<S,T> void copyList(List<S> srclist,List<T>targetlist,Class<T> tclazz){
 		for(S s : srclist){
@@ -83,4 +56,14 @@ public class BeanUtils {
 			}
 		}
 	}
+	
+	public static boolean containSubClass(Class<?>[] clazzs,Class<?> sub){
+		for(Class<?> clazz : clazzs){
+			if(clazz.isAssignableFrom(sub)){
+				return true;
+			}
+		}
+		return false;
+	}
+
 }

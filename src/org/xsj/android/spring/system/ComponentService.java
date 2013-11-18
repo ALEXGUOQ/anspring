@@ -1,12 +1,9 @@
 package org.xsj.android.spring.system;
 
+import org.xsj.android.spring.core.BeanInjecter;
 import org.xsj.android.spring.core.SpringUtils;
 import org.xsj.android.spring.core.annotation.Configuration;
-import org.xsj.android.spring.system.activity.ActivityInjecter;
-
 import android.app.Service;
-import android.content.Intent;
-import android.os.IBinder;
 
 public abstract class ComponentService extends Service {
 
@@ -20,9 +17,8 @@ public abstract class ComponentService extends Service {
 		if(this.getClass().isAnnotationPresent(Configuration.class)){
 			SpringUtils.load(this,this.getClass());
 		}
-		if(SpringUtils.hasLoad()){
-			SystemInjecter.inject(SpringUtils.getSpringContext(),this);
-		}
+		SystemInjecter.inject(this,this);
+		BeanInjecter.inject(SpringUtils.getSpringContext(),this);
 	}
 
 }

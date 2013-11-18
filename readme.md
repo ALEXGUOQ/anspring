@@ -2,18 +2,18 @@
 <body>
 <b>anspring简介</b>
 
-android平台仿spring 轻量级框架
-内容包含：
+android平台仿spring 轻量级框架<br>
+内容包含：<br>
 
-1，外围辅助工具集
+1，外围辅助工具集<br>
 1.1，一个轻量级 Logx框架，去掉了讨厌的tag，直接Logx.d(...),tag自动生成（类名_方法名_行数），
-并支持单个日志文件/日期划分日志文件/体积划分日志文件
-1.2，ActivityInject/SystemInject 对R.id 和按钮事件 等的注入，下个版本拟支持自定义解析器
-1.3，AndroidUtils 简化alert()等android相关常用操作
+并支持单个日志文件/日期划分日志文件/体积划分日志文件<br>
+1.2，ActivityInject/SystemInject 对R.id 和按钮事件 等的注入，下个版本拟支持自定义解析器<br>
+1.3，AndroidUtils 简化alert()等android相关常用操作<br>
 
-2，核心spring 
-2.1，ioc的基本功能，但只提供了annotation定义。
-2.2，由于android对cglib的不支持（也许认识有误），目前实现不完善的transaction，aop没有实现。
+2，核心spring <br>
+2.1，ioc的基本功能，但只提供了annotation定义。<br>
+2.2，由于android对cglib的不支持（也许认识有误），目前实现不完善的transaction，aop没有实现。<br>
 
 
 列子代码

@@ -4,37 +4,35 @@ import org.xsj.android.spring.core.BeanInjecter;
 import org.xsj.android.spring.core.SpringUtils;
 import org.xsj.android.spring.core.annotation.Configuration;
 import android.app.Activity;
+import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup.LayoutParams;
 
 
 public class ComponentActivity extends Activity {
 
-	@Override
-	public void setContentView(int layoutResID) {
-		super.setContentView(layoutResID);
-		__inject__();
-	}
-
-	@Override
-	public void setContentView(View view, LayoutParams params) {
-		super.setContentView(view, params);
-		__inject__();
-	}
-
-	@Override
-	public void setContentView(View view) {
-		super.setContentView(view);
-		__inject__();
-	}
-
 	private void __inject__() {
-		if(this.getClass().isAnnotationPresent(Configuration.class)){
-			SpringUtils.load(this,this.getClass());
-		}
 		ActivityInjecter.inject(this);
 		BeanInjecter.inject(SpringUtils.getSpringContext(),this);
 	}
-
+	
+	@Override
+	protected void onCreate(Bundle savedInstanceState) {
+		onBeforeCreate(savedInstanceState);
+		super.onCreate(savedInstanceState);
+		onBeforeInject(savedInstanceState);
+		__inject__();
+		onAfterInject(savedInstanceState);
+	}
+	
+	protected void onBeforeCreate(Bundle savedInstanceState) {
+	}
+	
+	protected void onBeforeInject(Bundle savedInstanceState) {
+	}
+	
+	protected void onAfterInject(Bundle savedInstanceState) {
+	}
+	
 
 }

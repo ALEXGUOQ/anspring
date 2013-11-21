@@ -40,8 +40,9 @@ import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.Toast;
 
+//项目为lib模式下，R_Id等不能用，暂时注释掉！
 public class MainActivity extends Activity{
-	@R_Id(R.id.button1)
+//	@R_Id(R.id.button1)
 	Button btn2;
 
 	@Autowired
@@ -68,11 +69,11 @@ public class MainActivity extends Activity{
 		SpringUtils.unload();
 		super.onDestroy();
 	}
-	@OnClick({R.id.button1,R.id.button2})
+//	@OnClick({R.id.button1,R.id.button2})
 	public void onClick(View v) {
 		androidUtils.alert("消息", xm.getName(), "确定", null);
 	}
-	@OnLongClick(R.id.button2)
+//	@OnLongClick(R.id.button2)
 	public boolean onLongClick() {
 		androidUtils.toast("长按");
 		return false;

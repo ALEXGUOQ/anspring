@@ -150,6 +150,15 @@ public class SpringContext {
 			this.status=STATUS_LOADED;
 		}
 	}
+	public void load(Context context){
+		if(this.status == STATUS_UNLOAD){
+			this.status = STATUS_LOADING;
+			this.context =  context.getApplicationContext();
+			registerBean(CONTEXT, context);
+			configurationLoader.load(context);
+			this.status=STATUS_LOADED;
+		}
+	}
 	public void unload(){
 		configurationLoader.unload();
 	}

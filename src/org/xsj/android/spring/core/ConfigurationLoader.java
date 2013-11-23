@@ -98,6 +98,20 @@ public class ConfigurationLoader {
 	    }
 	};
 	
+	public void load(Context context){
+		springContext.debug("springCongfig loading...");
+		springContext.setDebug(true);
+		springContext.setBasePackage(new String[]{});
+		_initPackages(context,springContext.getBasePackage());
+	    for(PendingBean pb : pendingBeanUnInitList){  
+			initPendingBean(pb);
+	    }
+	    springContext.debug("springCongfig loading success");
+	    for(PlanInvokeMethod im : postConstructList){
+	    	im.exec();
+	    }
+	};
+	
 	public void unload(){
 	    for(PlanInvokeMethod im : preDestroyList){
 	    	im.exec();
@@ -416,7 +430,7 @@ public class ConfigurationLoader {
 		}
 		PathClassLoader classLoader = (PathClassLoader) Thread.currentThread().getContextClassLoader();
 		try {
-			if(classPackages.length!=0){
+			if(classPackages!=null && classPackages.length!=0){
 				for(String classPackage : classPackages){
 					if(!StringUtils.isEmpty(classPackage)){
 						_initPackage(dex,classLoader,classPackage.replaceAll("\\*$", ""));

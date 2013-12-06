@@ -12,6 +12,7 @@ public class HandlerThreadReactor{
 	ConcurrentHashMap<Integer, MessageListener> messageListenerMap; 
 	public Looper loop;
 	public Handler handler;
+	private  boolean alive;
 	
 	public Handler getHandler() {
 		return handler;
@@ -65,18 +66,23 @@ public class HandlerThreadReactor{
 				}
 			}
 		};
+		alive=true;
 	};
 	public void restart(){
 		stop();
 		start();
 	};
 	public void stop(){
+		alive=false;
 		if(handlerThreadPool==null){
 			loop.quit();
 		}else{
 			handlerThreadPool.reclaim((HandlerThread) loop.getThread());
 		}
 		handler = null;
+	}
+	public boolean isAlive(){
+		return alive;
 	}
 	public void dispatch(Message message){
 		message.setTarget(handler);

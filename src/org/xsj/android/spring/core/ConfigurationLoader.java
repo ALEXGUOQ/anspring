@@ -383,6 +383,7 @@ public class ConfigurationLoader {
 			assignParam(clazz, psAnns, psClazz, params);
 			obj = method.invoke(pb.getConfigureObject(), params);
 		} catch (Exception e) {
+			springContext.error("fault create: "+clazz);
 			springContext.error(e);
 		}
 		waitPendingBeanSet.remove(pb);
@@ -415,6 +416,7 @@ public class ConfigurationLoader {
 			}
 			
 		} catch (Exception e) {
+			springContext.error("fault create: "+pb.getInjectClazz());
 			springContext.error(e);
 		}
 		waitPendingBeanSet.remove(pb);

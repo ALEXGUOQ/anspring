@@ -28,6 +28,7 @@ public class Logx {
 	
 	private static Logx logx = new Logx();
 	private SimpleDateFormat yyyyMMddHHmmss = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+	private SimpleDateFormat yyyyMMddHHmmss_ = new SimpleDateFormat("yyyy-MM-dd HH_mm_ss");
 	private SimpleDateFormat yyyyMMdd = new SimpleDateFormat("yyyy-MM-dd");
 	/**
 	 * 设置所有日志级别
@@ -272,7 +273,7 @@ public class Logx {
 						if(elem.isFile()){
 							String ename = elem.getName();
 							String[] enames = ename.split("\\.");
-							yyyyMMddHHmmss.parse(enames[0]);
+							yyyyMMddHHmmss_.parse(enames[0]);
 							return true;
 						}
 					} catch (ParseException e) {
@@ -285,7 +286,7 @@ public class Logx {
     		}
     	}
     	if(curfile==null){
-        	String path = fileDir + yyyyMMddHHmmss.format(new Date()) + ".log";
+        	String path = fileDir + yyyyMMddHHmmss_.format(new Date()) + ".log";
         	try {
 				fosm = new FileOutputStream(path,true);
 				fileSizeCur=0;
@@ -301,7 +302,7 @@ public class Logx {
 					fosm = new FileOutputStream(curfile,true);
 					fileSizeCur=len;
 				}else{
-		        	String path = fileDir + yyyyMMddHHmmss.format(new Date()) + ".log";
+		        	String path = fileDir + yyyyMMddHHmmss_.format(new Date()) + ".log";
 					fosm = new FileOutputStream(path,true);
 					fileSizeCur=0;
 				}
@@ -343,7 +344,7 @@ public class Logx {
 		Date now = new Date();
 		Date today = getTodayDate(now);
 		StringBuffer sb = new StringBuffer();
-		sb.append(yyyyMMddHHmmss.format(now)).append(" [V] ")
+		sb.append(yyyyMMddHHmmss.format(now)).append(levelstr)
 		.append(" ").append(tag).append("\r\n")
 		.append(getMsg(objects)).append("\r\n");
 		byte[] dat = sb.toString().getBytes();

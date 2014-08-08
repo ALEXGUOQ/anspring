@@ -9,6 +9,7 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Calendar;
 import java.util.Date;
 
 
@@ -42,9 +43,15 @@ public class Logx {
 	 * @param fileLevel
 	 * @param consoleLevel
 	 */
-    public static void setLevels(int fileLevel,int consoleLevel){
-		logx._setLevels(fileLevel,consoleLevel);
-    };
+	  public static void setLevels(int consoleLevel, int fileLevel)
+	  {
+	    logx._setLevels(consoleLevel, fileLevel);
+	  }
+
+	  public static void setLimitDay(int limitDay)
+	  {
+	    logx._setLimitDay(limitDay);
+	  }
 
     /**
      * 设置日志文件为单文件
@@ -126,6 +133,7 @@ public class Logx {
     private int fileType;
     private String fileDir;
     private String filePath;
+    private int limitDay;
     private Date fileTimePre;
     private long fileSizeCur;
     private long fileSizeMax;
@@ -208,10 +216,13 @@ public class Logx {
     	this.consoleLevel = allLevel;
     	this.fileLevel = allLevel;
     };
-    public void _setLevels(int fileLevel,int consoleLevel){
-    	this.consoleLevel = consoleLevel;
-    	this.fileLevel = fileLevel;
-    };
+    public void _setLevels(int consoleLevel, int fileLevel) {
+        this.consoleLevel = consoleLevel;
+        this.fileLevel = fileLevel;
+      }
+      public void _setLimitDay(int limitDay) {
+        this.limitDay = limitDay;
+      }
     public void _setFileSingle(String path){
     	this.fileType = FileSingle;
     	IOUtils.close(fosm);
@@ -253,8 +264,21 @@ public class Logx {
     };
     
     
+    private void _clearFiles() {
+        if (this.limitDay > 0) {
+          Calendar ca = Calendar.getInstance();
+          ca.add(5, -1 * this.limitDay);
+          Date lday = ca.getTime();
+          File dir = new File(this.fileDir);
+          if ((dir.exists()) && (dir.isDirectory()))
+            for (File file : dir.listFiles())
+              if ((file.isFile()) && (file.lastModified() < lday.getTime()))
+                file.delete();
+        }
+    }
     private void _createFileDaily() {
     	IOUtils.close(fosm);
+    	_clearFiles();
     	String path = fileDir + yyyyMMdd.format(new Date()) + ".log";
     	try {
 			fosm = new FileOutputStream(path,true);
@@ -340,7 +364,7 @@ public class Logx {
 		return sb.toString();
 	}
 	
-	private void writeFileLog(String levelstr,String tag,Object[] objects) {
+	private synchronized void writeFileLog(String levelstr,String tag,Object[] objects) {
 		Date now = new Date();
 		Date today = getTodayDate(now);
 		StringBuffer sb = new StringBuffer();

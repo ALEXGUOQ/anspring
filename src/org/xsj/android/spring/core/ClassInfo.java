@@ -27,6 +27,9 @@ public class ClassInfo {
 		}
 		return classInfo;
 	}
+	public static synchronized void clear() {
+		classInfoMap.clear();
+	}
 	private static void recursiveCollect(ClassInfo classInfo, Class<?> clazz){
 		if(clazz==Object.class)return;
 		for(Field field : clazz.getDeclaredFields()){

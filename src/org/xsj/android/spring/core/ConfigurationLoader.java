@@ -93,6 +93,7 @@ public class ConfigurationLoader {
 			initPendingBean(pb);
 	    }
 	    springContext.debug("springCongfig loading success");
+	    ClassInfo.clear();
 	    for(PlanInvokeMethod im : postConstructList){
 	    	im.exec();
 	    }
@@ -107,6 +108,7 @@ public class ConfigurationLoader {
 			initPendingBean(pb);
 	    }
 	    springContext.debug("springCongfig loading success");
+	    ClassInfo.clear();
 	    for(PlanInvokeMethod im : postConstructList){
 	    	im.exec();
 	    }

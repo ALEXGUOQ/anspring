@@ -385,8 +385,10 @@ public class ConfigurationLoader {
 			assignParam(clazz, psAnns, psClazz, params);
 			obj = method.invoke(pb.getConfigureObject(), params);
 		} catch (Exception e) {
-			springContext.error("fault create: "+clazz);
-			springContext.error(e);
+//			springContext.error("fault create: "+clazz);
+			Exception ex = new Exception("fault create: "+clazz);
+			ex.setStackTrace(e.getStackTrace());
+			springContext.error(ex);
 		}
 		waitPendingBeanSet.remove(pb);
 		return obj;
@@ -418,7 +420,9 @@ public class ConfigurationLoader {
 			}
 			
 		} catch (Exception e) {
-			springContext.error("fault create: "+pb.getInjectClazz());
+//			springContext.error("fault create: "+pb.getInjectClazz());
+			Exception ex = new Exception("fault create: "+pb.getInjectClazz());
+			ex.setStackTrace(e.getStackTrace());
 			springContext.error(e);
 		}
 		waitPendingBeanSet.remove(pb);

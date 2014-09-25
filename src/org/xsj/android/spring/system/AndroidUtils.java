@@ -287,7 +287,7 @@ public class AndroidUtils {
         return;   
         }   
           
-        int totalHeight = 0;   
+        int totalHeight = 10;
         for (int i = 0, len = listAdapter.getCount(); i < len; i++) { //listAdapter.getCount()返回数据项的数目   
 	        View listItem = listAdapter.getView(i, null, listView);   
 	        listItem.measure(0, 0); //计算子项View 的宽高   

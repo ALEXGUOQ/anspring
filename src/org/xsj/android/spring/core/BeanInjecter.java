@@ -23,54 +23,55 @@ public class BeanInjecter {
 	}
 
 	public static void inject(SpringContext springContext,Object object){
-		if(object==null)	return;
-		if(springContext.getStatus()==SpringContext.STATUS_UNLOAD ){
-			springContext.error("SpringContext has not load config");
-		}
-		Class<?> clazz = object.getClass();
-		Collection<Field> fields = ClassInfo.find(clazz).getFieldListWithOverride();
-		if(fields!=null && fields.size()>0){
-			for(Field field: fields){
-				if(autowareInject(springContext, field, object) || valueInject(springContext, field, object));
+		synchronized (springContext) {
+			if(object==null)	return;
+			if(springContext.getStatus()==SpringContext.STATUS_UNLOAD ){
+				springContext.error("SpringContext has not load config");
 			}
-		}
-		
-		Method[] methods = clazz.getDeclaredMethods();
-		for(Method method: methods){
-			Autowired autowired = method.getAnnotation(Autowired.class);
-			if(autowired!=null){
-				try {
-					Annotation[][] psAnns = method.getParameterAnnotations();
-					Class<?>[] psClazz = method.getParameterTypes();
-					Object params[]=new Object[psAnns.length];
-					springContext.getConfigurationLoader().assignParam(clazz, psAnns, psClazz, params);
-					method.invoke(object, params);
-				} catch (Exception e) {
-					springContext.error(e);
+			Class<?> clazz = object.getClass();
+			Collection<Field> fields = ClassInfo.find(clazz).getFieldListWithOverride();
+			if(fields!=null && fields.size()>0){
+				for(Field field: fields){
+					if(autowareInject(springContext, field, object) || valueInject(springContext, field, object));
 				}
 			}
-			if(springContext.getStatus()==SpringContext.STATUS_LOADING ){
-				PostConstruct postConstruct = method.getAnnotation(PostConstruct.class);
-				if(postConstruct!=null){
-					if(method.getReturnType() != Void.TYPE){
-						springContext.error("PostConstruct must return void:"+method);
-					}else if(method.getParameterTypes().length > 0){
-						springContext.error("PostConstruct must no param:"+method);
+			
+			Method[] methods = clazz.getDeclaredMethods();
+			for(Method method: methods){
+				Autowired autowired = method.getAnnotation(Autowired.class);
+				if(autowired!=null){
+					try {
+						Annotation[][] psAnns = method.getParameterAnnotations();
+						Class<?>[] psClazz = method.getParameterTypes();
+						Object params[]=new Object[psAnns.length];
+						springContext.getConfigurationLoader().assignParam(clazz, psAnns, psClazz, params);
+						method.invoke(object, params);
+					} catch (Exception e) {
+						springContext.error(e);
 					}
-					springContext.getConfigurationLoader().addPostConstruct(new PlanInvokeMethod(object, method));
 				}
-				PreDestroy preDestroy = method.getAnnotation(PreDestroy.class);
-				if(preDestroy!=null){
-					if(method.getReturnType() != Void.TYPE){
-						springContext.error("PostConstruct must return void:"+method);
-					}else if(method.getParameterTypes().length > 0){
-						springContext.error("PostConstruct must no param:"+method);
+				if(springContext.getStatus()==SpringContext.STATUS_LOADING ){
+					PostConstruct postConstruct = method.getAnnotation(PostConstruct.class);
+					if(postConstruct!=null){
+						if(method.getReturnType() != Void.TYPE){
+							springContext.error("PostConstruct must return void:"+method);
+						}else if(method.getParameterTypes().length > 0){
+							springContext.error("PostConstruct must no param:"+method);
+						}
+						springContext.getConfigurationLoader().addPostConstruct(new PlanInvokeMethod(object, method));
 					}
-					springContext.getConfigurationLoader().addPreDestroy(new PlanInvokeMethod(object, method));
+					PreDestroy preDestroy = method.getAnnotation(PreDestroy.class);
+					if(preDestroy!=null){
+						if(method.getReturnType() != Void.TYPE){
+							springContext.error("PostConstruct must return void:"+method);
+						}else if(method.getParameterTypes().length > 0){
+							springContext.error("PostConstruct must no param:"+method);
+						}
+						springContext.getConfigurationLoader().addPreDestroy(new PlanInvokeMethod(object, method));
+					}
 				}
 			}
 		}
-		
 	}
 	private static boolean autowareInject(SpringContext springContext, Field field, Object object) {
 		Autowired autowired = field.getAnnotation(Autowired.class);

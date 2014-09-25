@@ -11,5 +11,6 @@ import java.lang.annotation.Target;
 public @interface Configuration {
 //	public String[] basePackage() default {};
 //	public boolean allowInjectFault() default true;
-	public boolean debug() default true;
+	public boolean debug() default false;
+	public boolean lazyLoad() default false;
 }

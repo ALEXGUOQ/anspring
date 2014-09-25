@@ -8,7 +8,8 @@ import android.content.Context;
 /**
  * 
  * @author jjliu
- *
+ * 不能重复load
+ *	uload 时没敢删除内容，防止多线程还在使用的地方报错
  */
 public class SpringContext {
 	public final static String tag = "SpringContext";
@@ -22,6 +23,7 @@ public class SpringContext {
 	private int status;
 	private String[] basePackage;
 	private boolean debug;
+	private boolean lazyLoad;
 	
 	/**
 	 * 类和bean映射
@@ -135,6 +137,12 @@ public class SpringContext {
 	public void setDebug(boolean debug) {
 		this.debug = debug;
 	}
+	public void setLazyLoad(boolean lazyLoad) {
+		this.lazyLoad = lazyLoad;
+	}
+	public boolean isLazyLoad() {
+		return lazyLoad;
+	}
 	public void setBasePackage(String[] basePackage) {
 		this.basePackage = basePackage;
 	}
@@ -150,15 +158,7 @@ public class SpringContext {
 			this.status=STATUS_LOADED;
 		}
 	}
-	public void load(Context context){
-		if(this.status == STATUS_UNLOAD){
-			this.status = STATUS_LOADING;
-			this.context =  context.getApplicationContext();
-			registerBean(CONTEXT, context);
-			configurationLoader.load(context);
-			this.status=STATUS_LOADED;
-		}
-	}
+
 	public void unload(){
 		configurationLoader.unload();
 	}

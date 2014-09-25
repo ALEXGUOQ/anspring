@@ -30,6 +30,7 @@ import org.xsj.android.spring.core.annotation.Autowired;
 import org.xsj.android.spring.core.annotation.Component;
 import org.xsj.android.spring.core.annotation.ComponentScan;
 import org.xsj.android.spring.core.annotation.Configuration;
+import org.xsj.android.spring.core.annotation.DefaultConfigure;
 import org.xsj.android.spring.core.annotation.Import;
 import org.xsj.android.spring.core.annotation.PostConstruct;
 import org.xsj.android.spring.core.annotation.PreDestroy;
@@ -87,32 +88,22 @@ public class ConfigurationLoader {
 	public void load(Context context,Class<?> configClass){
 		springContext.debug("springCongfig loading...");
 		_initConfigClass(configClass);
-		_initPackages(context,springContext.getBasePackage());
-		invokeConfiguration(rootPendingConfiguration);
-	    for(PendingBean pb : pendingBeanUnInitList){  
-			initPendingBean(pb);
-	    }
-	    springContext.debug("springCongfig loading success");
-	    ClassInfo.clear();
-	    for(PlanInvokeMethod im : postConstructList){
-	    	im.exec();
-	    }
+		if(!springContext.isLazyLoad()){
+			_initPackages(context,springContext.getBasePackage());
+			invokeConfiguration(rootPendingConfiguration);
+		    for(PendingBean pb : pendingBeanUnInitList){  
+				initPendingBean(pb);
+		    }
+		    springContext.debug("springCongfig loading success");
+		    ClassInfo.clear();
+		    for(PlanInvokeMethod im : postConstructList){
+		    	im.exec();
+		    }
+		}else{
+		    springContext.debug("springCongfig lazy loading");
+		}
 	};
-	
-	public void load(Context context){
-		springContext.debug("springCongfig loading...");
-		springContext.setDebug(true);
-		springContext.setBasePackage(new String[]{});
-		_initPackages(context,springContext.getBasePackage());
-	    for(PendingBean pb : pendingBeanUnInitList){  
-			initPendingBean(pb);
-	    }
-	    springContext.debug("springCongfig loading success");
-	    ClassInfo.clear();
-	    for(PlanInvokeMethod im : postConstructList){
-	    	im.exec();
-	    }
-	};
+
 	
 	public void unload(){
 	    for(PlanInvokeMethod im : preDestroyList){
@@ -162,13 +153,18 @@ public class ConfigurationLoader {
 		Object obj = null;
 		Bean bean = springContext.getBeanClazzMap().get(clazz);
 		if(bean==null){
-			PendingBean pb = pendingBeanClazzMap.get(clazz);
-			if(pb!=null){
-				if(pb.getScope()==ScopeType.prototype){
-					obj = _createObject(pb);
-				}else if(pb.getScope()==ScopeType.singleton){
-					if(springContext.getStatus() == SpringContext.STATUS_LOADING){
+			if(springContext.isLazyLoad()){
+				PendingBean pb = new PendingBean(clazz);
+				obj = _createObject(pb);
+			}else{
+				PendingBean pb = pendingBeanClazzMap.get(clazz);
+				if(pb!=null){
+					if(pb.getScope()==ScopeType.prototype){
 						obj = _createObject(pb);
+					}else if(pb.getScope()==ScopeType.singleton){
+						if(springContext.getStatus() == SpringContext.STATUS_LOADING){
+							obj = _createObject(pb);
+						}
 					}
 				}
 			}
@@ -501,6 +497,7 @@ public class ConfigurationLoader {
 		if(rootPendingConfiguration==null){
 			rootPendingConfiguration = pendingConfiguration;
 			springContext.setDebug(configuration.debug());
+			springContext.setLazyLoad(configuration.lazyLoad());
 			ComponentScan componentScan = configClass.getAnnotation(ComponentScan.class);
 			if(componentScan!=null){
 				springContext.setBasePackage(componentScan.value());

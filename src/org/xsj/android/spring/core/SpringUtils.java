@@ -1,6 +1,7 @@
 package org.xsj.android.spring.core;
 
 import org.xsj.android.spring.core.annotation.Configuration;
+import org.xsj.android.spring.core.annotation.DefaultConfigure;
 import org.xsj.android.spring.system.SystemInjecter;
 import org.xsj.android.spring.system.activity.ActivityInjecter;
 
@@ -38,7 +39,7 @@ public class SpringUtils {
 		getSpringContext().load(context, configClass);
 	}
 	public static void load(Context context){
-		getSpringContext().load(context);
+		getSpringContext().load(context,DefaultConfigure.class);
 	}
 	public static void reload(Context context,Class<?> configClass){
 		unload();

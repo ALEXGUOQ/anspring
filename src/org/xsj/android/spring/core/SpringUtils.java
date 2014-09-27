@@ -33,7 +33,11 @@ public class SpringUtils {
 		getSpringContext().unRegisterBean(name);
 	}
 	public static boolean hasLoad(){
-		return getSpringContext().hasLoad();
+		if(springContext!=null){
+			return getSpringContext().hasLoad();
+		}else{
+			return false;
+		}
 	}
 	public static void load(Context context,Class<?> configClass){
 		getSpringContext().load(context, configClass);

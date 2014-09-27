@@ -17,6 +17,7 @@ public class SpringContext {
 	public final static int STATUS_UNLOAD = 0;
 	public final static int STATUS_LOADING = 1;
 	public final static int STATUS_LOADED= 2;
+	public final static int STATUS_UNLOADED= 3;
 	
 	private Context context;
 	private ConfigurationLoader configurationLoader;
@@ -149,17 +150,19 @@ public class SpringContext {
 	public ConfigurationLoader getConfigurationLoader() {
 		return configurationLoader;
 	}
-	public void load(Context context,Class<?> configClass){
+	public synchronized void  load(Context context,Class<?> configClass){
 		if(this.status == STATUS_UNLOAD){
 			this.status = STATUS_LOADING;
 			this.context =  context.getApplicationContext();
 			registerBean(CONTEXT, context);
 			configurationLoader.load(context,configClass);
-			this.status=STATUS_LOADED;
+			this.status=STATUS_UNLOADED;
+		}else{
+			error("cannot load repreat");
 		}
 	}
 
-	public void unload(){
+	public synchronized void unload(){
 		configurationLoader.unload();
 	}
 

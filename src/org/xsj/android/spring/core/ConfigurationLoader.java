@@ -131,28 +131,36 @@ public class ConfigurationLoader {
 	}
 
 	protected Object obtainObject(String name){
-		Object obj = null;
-		Bean bean = springContext.getBeanNameMap().get(name);
-		if(bean==null){
-			PendingBean pb = pendingBeanNameMap.get(name);
-			if(pb!=null){
-				if(pb.getScope()==ScopeType.prototype){
-					obj = _createObject(pb);
-				}else if(pb.getScope()==ScopeType.singleton){
-					if(springContext.getStatus() == SpringContext.STATUS_LOADING){
+		synchronized(springContext){
+			Object obj = null;
+			Bean bean = springContext.getBeanNameMap().get(name);
+			if(bean==null){
+				PendingBean pb = pendingBeanNameMap.get(name);
+				if(pb!=null){
+					if(pb.getScope()==ScopeType.prototype){
 						obj = _createObject(pb);
+					}else if(pb.getScope()==ScopeType.singleton){
+						if(springContext.getStatus() == SpringContext.STATUS_LOADING){
+							obj = _createObject(pb);
+						}
 					}
 				}
+			}else{
+				obj = bean.object;
 			}
-		}else{
-			obj = bean.object;
+			return obj;
 		}
-		return obj;
 	}
+	/**
+	 * 根据类获取对象，可能获取不到。及时加载的STATUS_LOADING 和 lazyload 允许运行
+	 * @param clazz
+	 * @return
+	 */
 	protected Object obtainObject(Class<?> clazz){
-		Object obj = null;
-		Bean bean = springContext.getBeanClazzMap().get(clazz);
-		if(bean==null){
+		synchronized(springContext){
+			Object obj = null;
+			Bean bean = springContext.getBeanClazzMap().get(clazz);
+			if(bean==null){
 			if(springContext.isLazyLoad()){
 				PendingBean pb = new PendingBean(clazz);
 				obj = _createObject(pb);
@@ -168,10 +176,11 @@ public class ConfigurationLoader {
 					}
 				}
 			}
-		}else{
-			obj = bean.object;
+			}else{
+				obj = bean.object;
+			}
+			return obj;
 		}
-		return obj;
 	}
 	protected void initPendingBean(PendingBean pendingBean){
 		if(!pendingBeanInitedSet.contains(pendingBean)){
@@ -241,7 +250,11 @@ public class ConfigurationLoader {
 		}
 		return obj;
 	}
-
+	/**
+	 * 根据注解描述生成对象
+	 * @param pb
+	 * @return
+	 */
 	protected Object _createObjectByComponent(PendingBean pb){
 		Class<?> clazz = pb.getInjectClazz();
 		if(faultPendingBeanSet.contains(pb) || Context.class.isAssignableFrom(clazz) || clazz.isPrimitive()){
@@ -295,7 +308,7 @@ public class ConfigurationLoader {
 			if(clazzInterfaces.length==0){
 				throw new RuntimeException("transactional class must implement a interface");
 			}
-			TransactionManager transactionManager = (TransactionManager) obtainObject(TransactionManager.class);
+			TransactionManager transactionManager = (TransactionManager) springContext.getBean(TransactionManager.class);
 			if(transactionManager==null){
 				throw new RuntimeException("not found bean TransactionManager");
 			}
@@ -326,9 +339,9 @@ public class ConfigurationLoader {
 				}
 			}
 			if(pinjectType==0){
-				pobj = obtainObject(pClazz);
+				pobj = springContext.getBean(pClazz);
 			}else if(pinjectType==1){
-				pobj = obtainObject(pname);
+				pobj = springContext.getBean(pname);
 			}else if(pinjectType==2){
 				pobj = getAnnValueObject(psClazz[i],pvalueKey);
 			}

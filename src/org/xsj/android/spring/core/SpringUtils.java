@@ -38,15 +38,54 @@ public class SpringUtils {
 	public static void load(Context context,Class<?> configClass){
 		getSpringContext().load(context, configClass);
 	}
+	/**
+	 * 加载spring环境
+	 * @param context
+	 */
 	public static void load(Context context){
 		getSpringContext().load(context,DefaultConfigure.class);
 	}
+	/**
+	 * 重新加载spring
+	 * @param context
+	 * @param configClass
+	 */
 	public static void reload(Context context,Class<?> configClass){
 		unload();
 		load(context,configClass);
 	}
+	/**
+	 * 关闭spring
+	 */
 	public static void unload(){
 		getSpringContext().unload();
 		springContext = null;
 	}
+	/**
+	 * 使用spring容器中的bean，给object注入成员
+	 * @param object
+	 */
+	public static void injectBean(Object object){
+		BeanInjecter.inject(object);
+	}
+	/**
+	 * 给object 注入android 特有的东西，比如各种service
+	 * 不包含injectBean，
+	 * 可以在spring没有load过的情况下使用。
+	 * @param object
+	 */
+	public static void injectSystem(Object object){
+		SystemInjecter.inject(object);
+	}
+	/**
+	 * 给activity注入android activity特有的东西，比如R.id.xxxxx 的组件
+	 * 包含injectSystem功能，
+	 * 不包含injectBean，
+	 * 可以在spring没有load过的情况下使用。
+	 * @param activity
+	 */
+	public static void injectActivity(Activity activity){
+		ActivityInjecter.inject(activity);
+	}
+	
 }

@@ -21,7 +21,11 @@ public class BeanInjecter {
 	public static void inject(Object object){
 		inject(SpringUtils.getSpringContext(),object);
 	}
-
+	/**
+	 * 给对象注入bean，和 obtainObject() 互为递归
+	 * @param springContext
+	 * @param object
+	 */
 	public static void inject(SpringContext springContext,Object object){
 		synchronized (springContext) {
 			if(object==null)	return;
@@ -83,9 +87,9 @@ public class BeanInjecter {
 			if(qualifier!=null){
 				qname = qualifier.value();
 				qname = StringUtils.defaultIfEmpty(qname,field.getName());
-				fieldObj = springContext.getConfigurationLoader().obtainObject(qname);
+				fieldObj = springContext.getBean(qname);
 			}else{
-				fieldObj = springContext.getConfigurationLoader().obtainObject(field.getType());
+				fieldObj = springContext.getBean(field.getType());
 			}
 			if(fieldObj==null){
 				if(autowired.required()){
